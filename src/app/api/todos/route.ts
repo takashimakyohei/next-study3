@@ -5,9 +5,7 @@ import { eq } from 'drizzle-orm';
 
 // GET /api/todos -> 全件取得
 export async function GET() {
-  console.log('GET /api/todos');
   const data = await db.select().from(todos).orderBy(todos.id);
-  console.log('GET /api/todos', data);
   return NextResponse.json(data);
 }
 
