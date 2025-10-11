@@ -11,6 +11,7 @@ export async function GET() {
 
 // POST /api/todos -> { title: string }
 export async function POST(req: Request) {
+  console.log('POST');
   try {
     const body = await req.json();
     const title = (body?.title ?? '').trim();
@@ -25,7 +26,7 @@ export async function POST(req: Request) {
 }
 
 // PATCH /api/todos?id=1 -> toggle completed
-export async function PATCH(req: Request) {
+export async function PUT(req: Request) {
   const { searchParams } = new URL(req.url);
   const id = Number(searchParams.get('id'));
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
@@ -34,7 +35,7 @@ export async function PATCH(req: Request) {
   const nowCompleted = !current[0].completed;
   await db
     .update(todos)
-    .set({ completed: nowCompleted, updatedAt: Date.now() })
+    .set({ completed: nowCompleted})
     .where(eq(todos.id, id));
   return NextResponse.json({ id, completed: nowCompleted });
 }
