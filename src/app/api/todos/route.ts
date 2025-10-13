@@ -1,12 +1,35 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/client';
 import { todos } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 // GET /api/todos -> 全件取得
-export async function GET() {
-  const data = await db.select().from(todos).orderBy(todos.id);
-  return NextResponse.json(data);
+export async function GET(request: NextRequest) {
+  // Get query parameters for pagination and search
+  const searchParams = request.nextUrl.searchParams
+  const page = parseInt(searchParams.get("page") || "1")
+  const limit = parseInt(searchParams.get("limit") || "5")
+  const offset = (page - 1) * limit
+
+  console.log(page, limit, offset)
+
+  const data = await db
+      .select()
+      .from(todos)
+      .orderBy(todos.id)
+      .limit(limit)      // 1ページあたり件数
+      .offset(offset);   // (page - 1) * limit
+
+  const [{ count }] = await db.select({ count: sql`count(*)`.mapWith(Number) }).from(todos);
+  const totalPages = Math.ceil(count / limit);
+
+  console.log(data)
+
+  return NextResponse.json({
+    data,
+    totalPages,
+    currentPage: page
+  });
 }
 
 // POST /api/todos -> { title: string }

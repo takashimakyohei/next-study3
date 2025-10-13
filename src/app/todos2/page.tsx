@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 interface Todo {
@@ -14,20 +15,30 @@ export default function Todos() {
   const [newTitle, setNewTitle] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const limit = parseInt(searchParams.get('limit') || '5', 10);
 
 
   const fetchTodos = async () => {
-    const res = await fetch('/api/todos');
+    const res = await fetch(`/api/todos?page=${page}&limit=${limit}`);
     if (!res.ok) {
       console.error('Failed to fetch todos');
       return;
     }
     const data = await res.json();
-    setTodos(data);
+    console.log(data);
+    setTodos(data.data);
+    setTotalPages(data.totalPages);
+    setCurrentPage(data.currentPage);
   }
   useEffect(() => {
     fetchTodos()
-  }, []);
+  }, [page, limit]);
 
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
 
@@ -89,6 +100,27 @@ export default function Todos() {
     setDeletingId(null);
   }
 
+  const generatePagination = () => {
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  const handlePageChange = (page) => {
+    // 既存の検索パラメータをベースに更新
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', String(page));
+    params.set('limit', String(limit));
+
+    // 表示ページ(例: /todos2) へクエリ付きで遷移
+    router.push(`/todos2?${params.toString()}`);
+
+    // 楽観更新したいなら保持
+    setCurrentPage(page);
+  };
+
 
   return (
       <div className="min-h-screen bg-gray-800 py-8 px-4">
@@ -125,6 +157,30 @@ export default function Todos() {
                 </li>
             ))}
           </ul>
+        </div>
+        <div className="flex justify-center w-full mt-6 space-x-2">
+          {
+              currentPage > 1 &&
+            <button onClick={() => handlePageChange(currentPage - 1)}>
+              前へ
+            </button>
+          }
+
+          {generatePagination().map((page, index) => (
+              <button
+                  key={index}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-4 py-2 rounded-lg ${currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-600 text-white'}`}
+              >
+                {page}
+              </button>
+          ))}
+          {
+              currentPage < totalPages &&
+            <button onClick={() => handlePageChange(currentPage + 1)}>
+              次へ
+            </button>
+          }
         </div>
         <Link
             href="/"
