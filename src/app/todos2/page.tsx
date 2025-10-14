@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Pagination from "@/app/util/pagination";
 
 interface Todo {
   id: number;
@@ -100,14 +101,6 @@ export default function Todos() {
     setDeletingId(null);
   }
 
-  const generatePagination = () => {
-    const pages = [];
-    for (let i = 1; i <= totalPages; i++) {
-      pages.push(i);
-    }
-    return pages;
-  }
-
   const handlePageChange = (page) => {
     // 既存の検索パラメータをベースに更新
     const params = new URLSearchParams(searchParams.toString());
@@ -120,7 +113,6 @@ export default function Todos() {
     // 楽観更新したいなら保持
     setCurrentPage(page);
   };
-
 
   return (
       <div className="min-h-screen bg-gray-800 py-8 px-4">
@@ -158,30 +150,11 @@ export default function Todos() {
             ))}
           </ul>
         </div>
-        <div className="flex justify-center w-full mt-6 space-x-2">
-          {
-              currentPage > 1 &&
-            <button onClick={() => handlePageChange(currentPage - 1)}>
-              前へ
-            </button>
-          }
-
-          {generatePagination().map((page, index) => (
-              <button
-                  key={index}
-                  onClick={() => handlePageChange(page)}
-                  className={`px-4 py-2 rounded-lg ${currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-600 text-white'}`}
-              >
-                {page}
-              </button>
-          ))}
-          {
-              currentPage < totalPages &&
-            <button onClick={() => handlePageChange(currentPage + 1)}>
-              次へ
-            </button>
-          }
-        </div>
+        <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+        />
         <Link
             href="/"
             className="inline-flex items-center mt-4 px-4 py-2 bg-gray-600 text-gray-100 font-semibold rounded-lg hover:bg-gray-500 transition-colors"
