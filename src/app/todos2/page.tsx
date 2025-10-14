@@ -18,6 +18,7 @@ export default function Todos() {
   const [deletingId, setDeletingId] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
+  const [keyword, setKeyword] = useState('');
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -26,13 +27,12 @@ export default function Todos() {
 
 
   const fetchTodos = async () => {
-    const res = await fetch(`/api/todos?page=${page}&limit=${limit}`);
+    const res = await fetch(`/api/todos?page=${page}&limit=${limit}&keyword=${keyword}`);
     if (!res.ok) {
       console.error('Failed to fetch todos');
       return;
     }
     const data = await res.json();
-    console.log(data);
     setTodos(data.data);
     setTotalPages(data.totalPages);
     setCurrentPage(data.currentPage);
@@ -106,7 +106,7 @@ export default function Todos() {
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', String(page));
     params.set('limit', String(limit));
-
+    if (keyword) params.set("keyword", keyword);
     // 表示ページ(例: /todos2) へクエリ付きで遷移
     router.push(`/todos2?${params.toString()}`);
 
@@ -114,8 +114,38 @@ export default function Todos() {
     setCurrentPage(page);
   };
 
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', '1');
+    params.set('limit', String(limit));
+    if (keyword) {
+      params.set('keyword', keyword);
+    } else {
+      params.delete('keyword');
+    }
+
+    router.push(`/todos2?${params.toString()}`);
+
+    await fetchTodos();
+  };
+
   return (
       <div className="min-h-screen bg-gray-800 py-8 px-4">
+        <form onSubmit={handleSearch} className="max-w-md mx-auto bg-gray-700 rounded-lg shadow-lg p-6">
+          <input
+              className="w-full px-3 py-2 bg-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              type="text"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+          />
+          <button
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors"
+              type="submit">
+            検索
+          </button>
+        </form>
         <form onSubmit={handleCreate} className="max-w-md mx-auto bg-gray-700 rounded-lg shadow-lg p-6">
           <input
               className="w-full px-3 py-2 bg-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"

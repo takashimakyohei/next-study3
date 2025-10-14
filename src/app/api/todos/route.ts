@@ -5,30 +5,40 @@ import { eq, sql } from 'drizzle-orm';
 
 // GET /api/todos -> 全件取得
 export async function GET(request: NextRequest) {
-  // Get query parameters for pagination and search
-  const searchParams = request.nextUrl.searchParams
-  const page = parseInt(searchParams.get("page") || "1")
-  const limit = parseInt(searchParams.get("limit") || "5")
-  const offset = (page - 1) * limit
+  const searchParams = request.nextUrl.searchParams;
+  const page = parseInt(searchParams.get("page") || "1", 10);
+  const limit = parseInt(searchParams.get("limit") || "5", 10);
+  const keyword = searchParams.get("keyword")?.trim() || "";
+  const offset = (page - 1) * limit;
 
-  console.log(page, limit, offset)
+  console.log("query params:", Object.fromEntries(searchParams));
 
-  const data = await db
-      .select()
-      .from(todos)
+  // ベースクエリ
+  let listQuery = db.select().from(todos);
+  let countQuery = db.select({ count: sql`count(*)`.mapWith(Number) }).from(todos);
+
+  if (keyword) {
+    const pattern = `%${keyword}%`;
+    // SQLite の部分一致 (LIKE は大文字小文字を区別しない)
+    listQuery = listQuery.where(sql`${todos.title} LIKE ${pattern}`);
+    countQuery = countQuery.where(sql`${todos.title}
+    LIKE
+    ${pattern}`);
+  }
+
+  const data = await listQuery
       .orderBy(todos.id)
-      .limit(limit)      // 1ページあたり件数
-      .offset(offset);   // (page - 1) * limit
+      .limit(limit)
+      .offset(offset);
 
-  const [{ count }] = await db.select({ count: sql`count(*)`.mapWith(Number) }).from(todos);
-  const totalPages = Math.ceil(count / limit);
-
-  console.log(data)
+  const [{ count }] = await countQuery;
+  const totalPages = Math.max(1, Math.ceil(count / limit));
 
   return NextResponse.json({
     data,
     totalPages,
-    currentPage: page
+    currentPage: page,
+    keyword: keyword || null,
   });
 }
 
