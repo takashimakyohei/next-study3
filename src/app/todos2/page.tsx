@@ -15,7 +15,7 @@ export default function Todos() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTitle, setNewTitle] = useState('');
   const [isCreating, setIsCreating] = useState(false);
-  const [deletingId, setDeletingId] = useState(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [keyword, setKeyword] = useState('');
@@ -101,7 +101,7 @@ export default function Todos() {
     setDeletingId(null);
   }
 
-  const handlePageChange = (page) => {
+  const handlePageChange = (page: number) => {
     // 既存の検索パラメータをベースに更新
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', String(page));

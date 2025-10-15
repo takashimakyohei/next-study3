@@ -12,6 +12,10 @@ interface Todo {
 }
 
 export class TodoModel {
+  /*
+    * 全件取得（ページネーション、キーワード検索対応）
+    *
+   */
   async findAll(params: { offset: number; limit: number; keyword?: string }): Promise<Todo[]> {
     let query = db.select().from(todos);
 

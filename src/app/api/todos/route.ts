@@ -38,27 +38,3 @@ export async function POST(req: Request) {
   }
 }
 
-// PATCH /api/todos?id=1 -> toggle completed
-export async function PUT(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const id = Number(searchParams.get('id'));
-  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
-  const current = await db.select().from(todos).where(eq(todos.id, id));
-  if (!current.length) return NextResponse.json({ error: 'not found' }, { status: 404 });
-  const nowCompleted = !current[0].completed;
-  await db
-    .update(todos)
-    .set({ completed: nowCompleted})
-    .where(eq(todos.id, id));
-  return NextResponse.json({ id, completed: nowCompleted });
-}
-
-// DELETE /api/todos?id=1
-export async function DELETE(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const id = Number(searchParams.get('id'));
-  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
-  await db.delete(todos).where(eq(todos.id, id));
-  return NextResponse.json({ ok: true });
-}
-
