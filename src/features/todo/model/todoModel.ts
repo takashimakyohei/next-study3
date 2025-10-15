@@ -3,7 +3,7 @@ import { db } from "@/db/client";
 import { todos } from "@/db/schema";
 import { sql } from "drizzle-orm";
 
-interface Todo{
+interface Todo {
   id: number;
   title: string;
   completed: boolean;
@@ -17,7 +17,9 @@ export class TodoModel {
 
     if (params.keyword) {
       const pattern = `%${params.keyword}%`;
-      query = query.where(sql`${todos.title} LIKE ${pattern}`);
+      query = query.where(sql`${todos.title}
+      LIKE
+      ${pattern}`);
     }
 
     return query.limit(params.limit).offset(params.offset);
@@ -27,9 +29,16 @@ export class TodoModel {
     let query = db.select({ count: sql<number>`count(*)` }).from(todos);
     if (keyword) {
       const pattern = `%${keyword}%`;
-      query = query.where(sql`${todos.title} LIKE ${pattern}`);
+      query = query.where(sql`${todos.title}
+      LIKE
+      ${pattern}`);
     }
     const [{ count }] = await query;
     return Number(count);
+  }
+
+  async create(title: string): Promise<Todo> {
+    const inserted = await db.insert(todos).values({ title }).returning();
+    return inserted[0];
   }
 }
