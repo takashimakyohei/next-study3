@@ -2,44 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/client';
 import { todos } from '@/db/schema';
 import { eq, sql } from 'drizzle-orm';
+import { TodoModel } from "@/features/todo/model/todoModel";
 
 // GET /api/todos -> 全件取得
 export async function GET(request: NextRequest) {
+  const todoModel = new TodoModel();
   const searchParams = request.nextUrl.searchParams;
   const page = parseInt(searchParams.get("page") || "1", 10);
   const limit = parseInt(searchParams.get("limit") || "5", 10);
   const keyword = searchParams.get("keyword")?.trim() || "";
   const offset = (page - 1) * limit;
 
-  console.log("query params:", Object.fromEntries(searchParams));
+  const data = await todoModel.findAll({ offset, limit, keyword });
+  const totalItems = await todoModel.count(keyword);
+  const totalPages = Math.max(1, Math.ceil(totalItems / limit));
 
-  // ベースクエリ
-  let listQuery = db.select().from(todos);
-  let countQuery = db.select({ count: sql`count(*)`.mapWith(Number) }).from(todos);
-
-  if (keyword) {
-    const pattern = `%${keyword}%`;
-    // SQLite の部分一致 (LIKE は大文字小文字を区別しない)
-    listQuery = listQuery.where(sql`${todos.title} LIKE ${pattern}`);
-    countQuery = countQuery.where(sql`${todos.title}
-    LIKE
-    ${pattern}`);
-  }
-
-  const data = await listQuery
-      .orderBy(todos.id)
-      .limit(limit)
-      .offset(offset);
-
-  const [{ count }] = await countQuery;
-  const totalPages = Math.max(1, Math.ceil(count / limit));
-
-  return NextResponse.json({
-    data,
-    totalPages,
-    currentPage: page,
-    keyword: keyword || null,
-  });
+  return NextResponse.json({ data, totalPages, currentPage: page, keyword });
 }
 
 // POST /api/todos -> { title: string }
