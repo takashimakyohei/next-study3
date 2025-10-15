@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/client';
 import { todos } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { TodoModel } from "@/features/todo/model/todoModel";
+
+const todoModel = new TodoModel();
 
 // GET /api/todos/id -> 個別取得
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -34,19 +37,15 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
   const body = await req.json();
   const { title } = body;
 
+  console.log(title);
+
   if (!title) return NextResponse.json({ error: 'title required' }, { status: 400 });
 
-  const current = await db.select().from(todos).where(eq(todos.id, id));
+  const current = await todoModel.findFirstById(id);
 
-  if (!current.length) return NextResponse.json({ error: 'not found' }, { status: 404 });
+  if (!current) return NextResponse.json({ error: 'not found' }, { status: 404 });
 
-  await db
-      .update(todos)
-      .set({
-        title: title,
-        updatedAt: new Date()
-      })
-      .where(eq(todos.id, id));
+  await todoModel.update(id, title);
 
   return NextResponse.json({ id, title });
 }
@@ -57,11 +56,11 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
 
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
 
-  const current = await db.select().from(todos).where(eq(todos.id, id));
+  const current = await todoModel.findFirstById(id);
 
-  if (!current.length) return NextResponse.json({ error: 'not found' }, { status: 404 });
+  if (!current) return NextResponse.json({ error: 'not found' }, { status: 404 });
 
-  await db.delete(todos).where(eq(todos.id, id));
+  await todoModel.delete(id);
 
   return NextResponse.json({ success: true });
 }
