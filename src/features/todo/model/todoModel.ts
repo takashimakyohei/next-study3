@@ -7,8 +7,8 @@ interface Todo {
   id: number;
   title: string;
   completed: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string; // TEXT TIMESTAMP
+  updatedAt: string; // TEXT TIMESTAMP
 }
 
 export class TodoModel {
@@ -55,7 +55,7 @@ export class TodoModel {
     await db.update(todos)
         .set({
           title: title,
-          updatedAt: new Date()
+          updatedAt: sql`CURRENT_TIMESTAMP` // TEXT形式で更新
         })
         .where(eq(todos.id, id));
   }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/src/db/client.ts">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/src/db/client.ts" />
+              <option name="originalContent" value="import { createClient } from '@libsql/client';&#10;import { drizzle } from 'drizzle-orm/libsql';&#10;import * as schema from './schema';&#10;&#10;const url = process.env.DB_FILE_NAME;&#10;if (!url) {&#10;  throw new Error('環境変数 DB_FILE_NAME が設定されていません (.env を確認)');&#10;}&#10;&#10;// libsql クライアント (ローカル file:./sqlite/dev.db)&#10;export const client = createClient({ url });&#10;export const db = drizzle(client, { schema });&#10;&#10;export type { Todo, NewTodo, Topic, NewTopic } from './schema';" />
+              <option name="updatedContent" value="import { createClient } from '@libsql/client';&#10;import { drizzle } from 'drizzle-orm/libsql';&#10;import * as schema from './schema';&#10;&#10;const url = process.env.DB_FILE_NAME;&#10;if (!url) {&#10;  throw new Error('環境変数 DB_FILE_NAME が設定されていません (.env を確認)');&#10;}&#10;&#10;// libsql クライアント (ローカル file:./sqlite/dev.db)&#10;export const client = createClient({ url });&#10;export const db = drizzle(client, { schema });&#10;&#10;export type { Todo, NewTodo, Topic, NewTopic } from './schema';" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

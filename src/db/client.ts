@@ -11,4 +11,4 @@ if (!url) {
 export const client = createClient({ url });
 export const db = drizzle(client, { schema });
 
-export type { Todo, NewTodo } from './schema';
+export type { Todo, NewTodo, Topic, NewTopic } from './schema';
